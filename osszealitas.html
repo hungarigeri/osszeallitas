@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Csapat</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #003366, #0055aa);
+      color: #222;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #002244;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+    }
+
+    #palya-wrapper {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+    }
+
+    #palya {
+      position: relative;
+      height: 800px;
+      width: 600px;
+      background: #0f7a29;
+      border: 6px solid white;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    /* 16-os */
+    .tizenhatos {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 300px;
+      height: 150px;
+      border: 3px solid white;
+      border-bottom: none;
+    }
+
+    /* Büntetőív */
+    .koriv {
+      position: absolute;
+      bottom: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 100px;
+      border: 3px solid white;
+      border-bottom: none;
+      border-radius: 100px 100px 0 0;
+    }
+
+    /* Kezdőkör */
+    .kezdokor {
+      position: absolute;
+      top: 6%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 100px;
+      border: 3px solid white;
+      border-top: none;
+      border-radius: 0 0 100px 100px;
+    }
+
+    /* Kezdőpont */
+    .kezdopont {
+      position: absolute;
+      top: 2%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px;
+      height: 12px;
+      background: white;
+      border-radius: 50%;
+    }
+
+    /* Sorok */
+    .sor {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    /* Játékos kártya */
+    .card {
+      position: relative;
+      cursor: pointer;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.9);
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .card:hover {
+      background: #ffd700;
+      color: #002244;
+      transform: scale(1.1);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      color: black;
+      border-radius: 8px;
+      padding: 10px;
+      width: 220px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+
+    .tooltip-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tooltip img {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid #ddd;
+    }
+
+    .tooltip .info {
+      text-align: left;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    .tooltip .info p {
+      margin: 3px 0;
+    }
+
+    .card:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* Kapus tooltip lefelé nyíljon */
+    .kapus-sor .card .tooltip {
+      top: 125%;
+      bottom: auto;
+    }
+
+    footer {
+      text-align: center;
+      color: white;
+      margin: 20px;
+      font-size: 14px;
+    }
+    
+    /* Pozíció címkék */
+    .pozicio-cimke {
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 16px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+    }
+  </style>
+</head>
+<body>
+  <header>Algyő SKII. - Csapatfelállás</header>
+
+  <div id="palya-wrapper">
+    <div id="palya">
+      <!-- 16-os és a körív -->
+      <div class="tizenhatos"></div>
+      <div class="koriv"></div>
+
+      <!-- Kezdőkör és kezdőpont -->
+      <div class="kezdokor"></div>
+      <div class="kezdopont"></div>
+
+      <!-- Csatárok -->
+      <div class="pozicio-cimke">Csatárok</div>
+      <div class="sor">
+        <span class="card">
+          VASTAG SÁNDOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1396/1395120.jpg" alt="Vastag Sándor"/>
+              <div class="info">
+                <p><b>Név:</b> Vastag Sándor</p>
+                <p><b>Csapat:</b> Algyő Sk</p>
+                <p><b>Kor:</b> 29</p>
+                <p><b>Pozíció:</b> Csatár</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          BANK SZILÁRD
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1640/1639093.jpg" alt="Bank Szilárd"/>
+              <div class="info">
+                <p><b>Név:</b> Bank Szilárd</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 41</p>
+                <p><b>Pozíció:</b> Csatár</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          PATAKI SÁNDOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1378/1377989.jpg" alt="Pataki Sándor"/>
+              <div class="info">
+                <p><b>Név:</b> Pataki Sándor</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 41</p>
+                <p><b>Pozíció:</b> Csatár</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          TÓTH MARTIN
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1553/1552923.jpg" alt="Tóth Martin"/>
+              <div class="info">
+                <p><b>Név:</b> Tóth Martin</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 28</p>
+                <p><b>Pozíció:</b> Csatár</p>
+              </div>
+            </div>
+          </div>
+        </span>
+      </div>
+    
+      <!-- Középpályások -->
+      <div class="pozicio-cimke">Középpályások</div>
+      <div class="sor">
+        <span class="card">
+          PODONYI NORBERT
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1758/1757106.jpg" alt="Podonyi Norbert"/>
+              <div class="info">
+                <p><b>Név:</b> Podonyi Norbert</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 41</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          SZECSKÓ TAMÁS
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1742/1741457.jpg" alt="Szecskó Tamás"/>
+              <div class="info">
+                <p><b>Név:</b> Szecskó Tamás</p>
+                <p><b>Csapat:</b>Algyő Sk/p>
+                <p><b>Kor:</b> 42</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          KISS GYULA
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1656/1655317.jpg" alt="Kiss Gyula"/>
+              <div class="info">
+                <p><b>Név:</b> Kiss Gyula</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 48</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          NÉMET DÁNIEL ERIK
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1656/1655599.jpg" alt="Németh Dániel Erik"/>
+              <div class="info">
+                <p><b>Név:</b> Németh Dániel Erik</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 30</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          CUFLIC VIKTOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1754/1753064.jpg" alt="Cuffic Viktor"/>
+              <div class="info">
+                <p><b>Név:</b> Cuffic Viktor</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 21</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          FARKAS GÁBOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1657/1656675.png" alt="Farkas Gábor"/>
+              <div class="info">
+                <p><b>Név:</b> Farkas Gábor</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 18</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          SÍK BENCE
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1647/1646461.jpg" alt="Sík Bence"/>
+              <div class="info">
+                <p><b>Név:</b> Sík Bence</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 17</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          BOZÓKI JOEL
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1745/1744192.jpg" alt="Bozóki Joel"/>
+              <div class="info">
+                <p><b>Név:</b> Bozóki Joel</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 17</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          VOZÁR BENCE JÓZSEF
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1612/1611183.jpg" alt="Vozár Bence József"/>
+              <div class="info">
+                <p><b>Név:</b> Vozár Bence József</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 19</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          RÉBÉK RICHÁRD
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1743/1742425.jpg" alt="Rébék Richárd"/>
+              <div class="info">
+                <p><b>Név:</b> Rébék Richárd</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 23</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          BESZEDICS MÁRTON
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1640/1639095.jpg" alt="Beszedics Márton"/>
+              <div class="info">
+                <p><b>Név:</b> Beszedics Márton</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 38</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          MOLNÁR SZABOLCS
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1378/1377987.jpg" alt="Molnár Szabolcs"/>
+              <div class="info">
+                <p><b>Név:</b> Molnár Szabolcs</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 27</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          PÓCS TAMÁS
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1584/1583042.jpg" alt="Pócs Tamás"/>
+              <div class="info">
+                <p><b>Név:</b> Pócs Tamás</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 32</p>
+                <p><b>Pozíció:</b> Középpályás</p>
+              </div>
+            </div>
+          </div>
+        </span>
+      </div>
+
+      <!-- Védők -->
+      <div class="pozicio-cimke">Védők</div>
+      <div class="sor">
+        <span class="card">
+          DARÓCZI LÁSZLÓ
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1378/1377977.jpg" alt="Daróczi László"/>
+              <div class="info">
+                <p><b>Név:</b> Daróczi László</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 42</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          VASTAG BALÁZS
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1473/1472127.jpg" alt="Vastag Balázs"/>
+              <div class="info">
+                <p><b>Név:</b> Vastag Balázs</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 37</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          KOVÁCS MILÁN
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1775/1774756.jpg" alt="Kovács Milán"/>
+              <div class="info">
+                <p><b>Név:</b> Kovács Milán</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 32</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          FARKAS RICHÁRD SÁNDOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1559/1558989.jpg" alt="Farkas Richárd Sándor"/>
+              <div class="info">
+                <p><b>Név:</b> Farkas Richárd Sándor</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 28</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          TÖRÖK MARTIN
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1656/1655602.jpg" alt="Török Martin"/>
+              <div class="info">
+                <p><b>Név:</b> Török Martin</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 27</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          RICZÓ DÁVID GÁBOR
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1660/1659669.jpg" alt="Riczó Dávid Gábor"/>
+              <div class="info">
+                <p><b>Név:</b> Riczó Dávid Gábor</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 20</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          MAJÓ VINCE
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1567/1566698.jpg" alt="Majó Vince"/>
+              <div class="info">
+                <p><b>Név:</b> Majó Vince</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 20</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          PÉNZVÁLTÓ BENCE
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1594/1593698.jpg" alt="Pénzváltó Bence"/>
+              <div class="info">
+                <p><b>Név:</b> Pénzváltó Bence</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 35</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          SZATMÁRI LÁSZLÓ LEONTIN
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1760/1759298.jpg" alt="Szatmári László Leontin"/>
+              <div class="info">
+                <p><b>Név:</b> Szatmári László Leontin</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 17</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          LACZI NORBERT
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1754/1753061.jpg" alt="Laczi Norbert"/>
+              <div class="info">
+                <p><b>Név:</b> Laczi Norbert</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 40</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          CSÁNYI ANDRÁS MIHÁLY
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1642/1641311.jpg" alt="Csányi András Mihály"/>
+              <div class="info">
+                <p><b>Név:</b> Csányi András Mihály</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 18</p>
+                <p><b>Pozíció:</b> Védő</p>
+              </div>
+            </div>
+          </div>
+        </span>
+      </div>
+
+      <!-- Kapusok -->
+      <div class="pozicio-cimke">Kapusok</div>
+      <div class="sor kapus-sor">
+        <span class="card">
+          MISON BALÁZS
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1752/1751085.jpg" alt="Mison Balázs"/>
+              <div class="info">
+                <p><b>Név:</b> Mison Balázs</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 19</p>
+                <p><b>Pozíció:</b> Kapus</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          HECKÓ KIRILL
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1453/1452758.jpg" alt="Heckó Kirill"/>
+              <div class="info">
+                <p><b>Név:</b> Heckó Kirill</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 22</p>
+                <p><b>Pozíció:</b> Kapus</p>
+              </div>
+            </div>
+          </div>
+        </span>
+
+        <span class="card">
+          TÓTH GERGELY
+          <div class="tooltip">
+            <div class="tooltip-content">
+              <img src="https://adatbank.mlsz.hu/img/SzemelyFoto/Foto/1565/1564006.jpg" alt="Tóth Gergely"/>
+              <div class="info">
+                <p><b>Név:</b> Tóth Gergely</p>
+                <p><b>Csapat:</b>Algyő Sk</p>
+                <p><b>Kor:</b> 22</p>
+                <p><b>Pozíció:</b> Kapus</p>
+              </div>
+            </div>
+          </div>
+        </span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
